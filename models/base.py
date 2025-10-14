@@ -2,13 +2,15 @@ from .types_ import *
 from torch import nn
 from abc import abstractmethod
 
+# abstractmethod 用来标识一个方法是抽象方法的装饰器, 强制子类实现该方法; 不能直接实例化 abstractmethod 修饰的类
+
 class BaseVAE(nn.Module):
     
     def __init__(self) -> None:
         super(BaseVAE, self).__init__()
 
     def encode(self, input: Tensor) -> List[Tensor]:
-        raise NotImplementedError
+        raise NotImplementedError # 如果基类对象调用该方法会报错，继承类必须实现该方法
 
     def decode(self, input: Tensor) -> Any:
         raise NotImplementedError
