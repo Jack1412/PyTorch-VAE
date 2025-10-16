@@ -94,7 +94,7 @@ class VanillaVAE(BaseVAE):
         :return: (Tensor) List of latent codes [N x latent_dim]
         """
         result = self.encoder(input) # [N, hidden_dims[-1],  H/32, W/32]
-        result = torch.flatten(result, start_dim=1) # [N, hidden_dims[-1] * 4], 这里说明 H 和 W 必须是64才行 ???
+        result = torch.flatten(result, start_dim=1) # [N, hidden_dims[-1] * 4], 这里说明 H 和 W 必须是64才行
 
         # Split the result into mu and var components
         # of the latent Gaussian distribution
