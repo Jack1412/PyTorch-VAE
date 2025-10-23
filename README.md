@@ -14,7 +14,9 @@
 
 </p>
 
-### repo修改: 注释了 vae, vqvae, cvae, run, experiment, utils 脚本
+### My Contribution
+1. 注释了 vae, vqvae, cvae, run, experiment, utils 脚本，方便理解
+2. 修改代码在 pytorch-lightning(2.3.0) 上可在H800上训练                  
 
 **Update 22/12/2021:** Added support for PyTorch Lightning 1.5.6 version and cleaned up the code.
 

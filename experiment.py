@@ -41,7 +41,7 @@ class VAEXperiment(pl.LightningModule):
         """
         return self.model(input, **kwargs)
 
-    def training_step(self, batch, batch_idx, optimizer_idx = 0):
+    def training_step(self, batch, batch_idx):
         """
         PL框架的训练步骤: 每次迭代 (处理一个batch) 的训练逻辑, 含数据读取、损失计算、日志记录。
         Args:
@@ -58,8 +58,9 @@ class VAEXperiment(pl.LightningModule):
         # M_N: KL损失的权重 (通常为"当前batch大小/训练集总样本数", 控制KL损失的量级) 
         train_loss = self.model.loss_function(*results,
                                               M_N = self.params['kld_weight'], #al_img.shape[0]/ self.num_train_imgs,
-                                              optimizer_idx=optimizer_idx,
+                                            #   optimizer_idx=optimizer_idx,
                                               batch_idx = batch_idx)
+
         # self.log_dict 是 LightningModule 提供的日志记录接口，用于将多个键值对形式的指标（如损失、准确率）同时记录到日志器（如 TensorBoard）
         # item() 将 {'loss': tensor(0.5), 'Reconstruction_Loss': tensor(0.3), 'KLD': tensor(0.2)} 转换为
         # {'loss': 0.5, 'Reconstruction_Loss': 0.3, 'KLD': 0.2}
@@ -67,7 +68,7 @@ class VAEXperiment(pl.LightningModule):
 
         return train_loss['loss']
 
-    def validation_step(self, batch, batch_idx, optimizer_idx = 0):
+    def validation_step(self, batch, batch_idx):
         """
         PL框架的验证步骤: 每次验证迭代 (处理一个batch) 的逻辑, 与训练步骤类似但不更新参数。
         作用: 评估模型在验证集上的性能, 避免过拟合。
@@ -82,7 +83,7 @@ class VAEXperiment(pl.LightningModule):
         # 计算验证损失: M_N设为1.0 (验证阶段通常不调整KL权重, 直接用原始损失) 
         val_loss = self.model.loss_function(*results,
                                             M_N = 1.0, #real_img.shape[0]/ self.num_val_imgs,
-                                            optimizer_idx = optimizer_idx,
+                                            # optimizer_idx = optimizer_idx,
                                             batch_idx = batch_idx)
         # 日志记录: 验证损失的键名加"val_"前缀 (如val_loss、val_Reconstruction_Loss) , 避免与训练日志混淆
         self.log_dict({f"val_{key}": val.item() for key, val in val_loss.items()}, sync_dist=True)
@@ -171,6 +172,8 @@ class VAEXperiment(pl.LightningModule):
                 except:
                     pass
                 # 返回优化器列表和调度器列表 (PL会自动在每个epoch后更新调度器) 
+                print("len of optims: ", len(optims))
+                print("len of scheds: ", len(scheds))
                 return optims, scheds
         except:
             return optims

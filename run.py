@@ -8,10 +8,12 @@ from experiment import VAEXperiment
 import torch.backends.cudnn as cudnn
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.utilities.seed import seed_everything
+# from pytorch_lightning.utilities.seed import seed_everything
+from lightning_fabric.utilities.seed import seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from dataset import VAEDataset
-from pytorch_lightning.plugins import DDPPlugin
+# from pytorch_lightning.plugins import DDPPlugin
+from pytorch_lightning.strategies import DDPStrategy
 
 
 parser = argparse.ArgumentParser(description='Generic runner for VAE models')
@@ -40,7 +42,7 @@ model = vae_models[config['model_params']['name']](**config['model_params'])
 experiment = VAEXperiment(model,
                           config['exp_params'])
 
-data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
+data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['devices']) != 0)
 
 # PL DataModule 的核心方法，在每个进程中执行一次，完成数据集划分（显式调用 setup() 不是必需的，但无害，runner.fit会自动调用 setup()）
 data.setup()
@@ -52,7 +54,7 @@ runner = Trainer(logger=tb_logger,
                                      monitor= "val_loss", # 监控的指标（以验证集损失为标准）
                                      save_last= True), # 额外保存最后一个epoch的模型（方便断点续训）
                  ],
-                 strategy=DDPPlugin(find_unused_parameters=False),
+                 strategy=DDPStrategy(find_unused_parameters=False),
                  **config['trainer_params'])
 
 # 创建样本保存目录, 重建图保存目录
